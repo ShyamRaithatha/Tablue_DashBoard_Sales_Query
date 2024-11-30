@@ -1,0 +1,109 @@
+SELECT 
+    -- Sales Information
+    Sales.SalesID, 
+    Sales.VoucherNo, 
+    Sales.VoucherDate, 
+    Sales.AddDate, 
+    Sales.PaymentMode,
+    Sales.DiscAmt, 
+    Sales.SalesmanID, 
+    ItemSalesMan.SalesmanName, 
+    'TargetSales' AS TargetSales, 
+    
+    -- Product Information
+    SItem.Barcode, 
+    ItemName,
+    Product.ProductName, 
+    Product.ProductID, 
+    Brand.BrandName, 
+    ItmGrp.ItemGroupName, 
+    Dep.DepartmentName, 
+    SItem.ItemID, 
+    
+    -- Transaction/Financial Data
+    TotalQty AS SalesQty, 
+    SItem.SalesRate, 
+    SItem.NetAmt, 
+    SItem.TaxableAmt, 
+    SItem.AmtWithTax, 
+    SItem.PurcRate, 
+    SItem.PurcCostRate, 
+    SItem.TaxAmt, 
+    SItem.TaxPrc, 
+    SItem.MRP, 
+    SItem.DiscPrc, 
+    SItem.DiscAmt, 
+    SItem.ItemAmt, 
+    Stock.StockMarkUpPrc, 
+    Stock.StockMarkDownPrc,
+    
+    -- Customer Information
+    MainAcc.AccountName, 
+    CustCat.CustomerCategoryName, 
+    CustSubCat.CustomerSubCategoryName, 
+    Region.RegionName, 
+    PartyAcc.AccountName AS PartyAccountName, 
+    
+    -- Stock & Inventory Data
+    Stock.Barcode AS StockBarcode, 
+    Color.ColorName, 
+    
+    -- Miscellaneous
+    'Type OF Item' AS TypeOfItem, 
+    SubCategory1Name + 'Fabric' AS Fabric, 
+    SubCategory2Name + 'Pattern' AS Pattern, 
+    SubCategory3Name + 'Fashion' AS Fashion, 
+    Season.SeasonName + 'Season' AS Season, 
+    SItem.Size1, 
+    
+    -- Additional Details
+    TaxName.TaxName
+FROM 
+    trnSalesItem AS SItem
+JOIN 
+    trnSales AS Sales ON Sales.SalesID = SItem.SalesID -- Main Sales join
+LEFT JOIN 
+    mstAccount AS MainAcc ON Sales.AccountID = MainAcc.AccountID 
+    AND Sales.CompanyID = MainAcc.CompanyID 
+    AND Sales.BranchID = MainAcc.BranchID
+LEFT JOIN 
+    mstCustomerCategory AS CustCat ON CustCat.CustomerCategoryID = MainAcc.CustomerCategoryID
+LEFT JOIN 
+    mstCustomerSubCategory AS CustSubCat ON CustSubCat.CustomerSubCategoryID = MainAcc.CustomerSubCategoryID
+LEFT JOIN 
+    mstRegion AS Region ON Region.RegionID = MainAcc.RegionID
+LEFT JOIN 
+    mstItem AS Item ON Item.ItemID = SItem.ItemID
+LEFT JOIN 
+    mstProduct AS Product ON Item.ProductID = Product.ProductID
+LEFT JOIN 
+    trnStock AS Stock ON Stock.Barcode = SItem.Barcode
+LEFT JOIN 
+    mstBrand AS Brand ON Brand.BrandID = ISNULL(Item.BrandID, Stock.StockBrandID)
+LEFT JOIN 
+    mstColor AS Color ON Color.ColorID = SItem.ColorID
+LEFT JOIN 
+    mstAccount AS PartyAcc ON Stock.AccountID = PartyAcc.AccountID
+LEFT JOIN 
+    mstItemGroup AS ItmGrp ON ItmGrp.ItemGroupID = Item.ItemGroupID
+LEFT JOIN 
+    mstDepartment AS Dep ON Dep.DepartmentID = Item.DepartmentID
+LEFT JOIN 
+    mstSalesman AS ItemSalesMan ON ItemSalesMan.SalesmanID = SItem.SalesmanID
+LEFT JOIN 
+    mstPromo AS Promo ON Promo.PromoID = SItem.PromoID
+LEFT JOIN 
+    mstTax AS TaxName ON TaxName.TaxID = SItem.TaxID
+LEFT JOIN 
+    mstSubCategory1 AS SubCat1 ON SubCat1.SubCategory1ID = SItem.SubCategory1ID
+LEFT JOIN 
+    mstSubCategory2 AS SubCat2 ON SubCat2.SubCategory2ID = SItem.SubCategory2ID
+LEFT JOIN 
+    mstSubCategory3 AS SubCat3 ON SubCat3.SubCategory3ID = SItem.SubCategory3ID
+LEFT JOIN 
+    mstSubCategory4 AS SubCat4 ON SubCat4.SubCategory4ID = SItem.SubCategory4ID
+LEFT JOIN 
+    mstSeason AS Season ON Season.SeasonID = Sales.SeasonID
+
+ORDER BY 
+    Sales.AddDate DESC;
